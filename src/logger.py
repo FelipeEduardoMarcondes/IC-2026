@@ -53,6 +53,11 @@ async def run():
                 print(f"[Logger] CONECTADO! Pode voar com o QGroundControl.")
                 break
         
+        # [CORREÇÃO] Define a taxa de atualização na fonte para 2Hz
+        # Isso substitui a necessidade de sleep e evita lag no buffer
+        print("[Logger] Configurando taxa de telemetria para 2Hz...")
+        await drone.telemetry.set_rate_position(2.0)
+        
         # 4. Loop de Gravação
         print(f"[Logger] Gravando dados em: {filename}")
         print("[Logger] Pressione Ctrl+C para salvar e sair.")
@@ -75,7 +80,7 @@ async def run():
 
             # Feedback Visual no Terminal
             status_los = "LIVRE" if is_los else "BLOQUEADO"
-            print(f"Lat: {position.latitude_deg:.6f} | Lon: {position.longitude_deg:.6f} | Alt: {position.absolute_altitude_m:.1f} | Dist: {dist:.1f}m")
+            print(f"Lat: {position.latitude_deg:.6f} | Lon: {position.longitude_deg:.6f} | Alt: {position.absolute_altitude_m:.1f} | Dist: {dist:.1f}m | LOS: {status_los}")
 
             # Salva no CSV
             writer.writerow([
@@ -89,9 +94,7 @@ async def run():
                 success
             ])
             
-            # Limita taxa de amostragem (2Hz = 0.5s)
-            # Se quiser mais resolução, diminua para 0.1
-            await asyncio.sleep(0.5)
+            # [CORREÇÃO] Sleep removido. O loop agora segue o ritmo dos dados chegando (2Hz).
 
     print("[Logger] Arquivo salvo e fechado. Fim.")
 
